@@ -2145,6 +2145,23 @@
             display: none;
         }
 
+        .forgot-password {
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .forgot-password a {
+            color: var(--text-light);
+            font-size: var(--font-size-small);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .forgot-password a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
         /* Profile Modal */
         .profile-modal {
             display: none;
@@ -2283,96 +2300,6 @@
         .profile-btn-secondary:hover {
             background: #e0e0e0;
         }
-
-        /* Order History */
-        .order-history {
-            margin-top: 20px;
-        }
-
-        .order-history-title {
-            font-size: var(--font-size-large);
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .order-history-title i {
-            color: var(--primary-color);
-        }
-
-        .order-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-
-        .order-item {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .order-item:hover {
-            border-color: var(--primary-color);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .order-id {
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .order-date {
-            font-size: var(--font-size-small);
-            color: var(--text-light);
-        }
-
-        .order-status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: var(--font-size-small);
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        .status-completed {
-            background-color: var(--primary-extra-light);
-            color: var(--primary-dark);
-        }
-
-        .status-pending {
-            background-color: #FEF3C7;
-            color: #92400E;
-        }
-
-        .status-cancelled {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-
-        .order-total {
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .no-orders {
-            text-align: center;
-            padding: 20px 0;
-            color: var(--text-light);
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
@@ -2392,7 +2319,7 @@
         </a>
         <div class="menu-category" id="seller-menu-btn">
             <i class="fas fa-store"></i>
-            <span>Quiero vender</span>
+            <span>Quiero vender mis productos</span>
         </div>
     </div>
     
@@ -2463,7 +2390,7 @@
     <div class="seller-btn-container">
         <button class="seller-btn" id="seller-btn">
             <i class="fas fa-store"></i>
-            ¿Quieres vender tus productos? Regístrate aquí
+            Quiero vender mis productos
         </button>
     </div>
     
@@ -2591,6 +2518,9 @@
                         <label for="login-password">Contraseña</label>
                         <input type="password" id="login-password" required>
                     </div>
+                    <div class="forgot-password">
+                        <a href="#" id="forgot-password">¿Olvidaste tu contraseña?</a>
+                    </div>
                     <button type="submit" class="auth-submit-btn">Iniciar Sesión</button>
                     <div class="auth-footer">
                         ¿No tienes una cuenta? <span class="auth-toggle" id="show-register">Regístrate</span>
@@ -2638,16 +2568,6 @@
                     </div>
                     <div class="profile-name" id="profile-name">Usuario</div>
                     <div class="profile-email" id="profile-email">usuario@ejemplo.com</div>
-                </div>
-                
-                <div class="order-history">
-                    <div class="order-history-title">
-                        <i class="fas fa-history"></i>
-                        <span>Historial de Pedidos</span>
-                    </div>
-                    <div class="order-list" id="order-list">
-                        <div class="no-orders">No hay pedidos recientes</div>
-                    </div>
                 </div>
                 
                 <div class="profile-actions">
@@ -2703,6 +2623,26 @@
         </div>
     </div>
 
+    <div class="dialog-overlay" id="password-reset-dialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <div class="dialog-title">Recuperar contraseña</div>
+                <div class="dialog-close" id="password-reset-dialog-close">&times;</div>
+            </div>
+            <div class="dialog-body">
+                <div class="form-group">
+                    <label for="reset-email">Correo Electrónico</label>
+                    <input type="email" id="reset-email" required>
+                    <div class="auth-error" id="reset-error"></div>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn dialog-btn-secondary" id="password-reset-dialog-cancel">Cancelar</button>
+                <button class="dialog-btn dialog-btn-primary" id="password-reset-dialog-confirm">Enviar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -2732,7 +2672,6 @@
         
         let shoppingBag = JSON.parse(localStorage.getItem('shoppingBag')) || [];
         let currentUser = null;
-        let userOrders = [];
         
         const municipalitiesByProvince = {
             "Pinar del Río": ["Consolación del Sur", "Guane", "La Palma", "Los Palacios", "Mantua", "Minas de Matahambre", "Pinar del Río", "San Juan y Martínez", "San Luis", "Sandino", "Viñales"],
@@ -2824,14 +2763,21 @@
             registerError: document.getElementById('register-error'),
             showRegister: document.getElementById('show-register'),
             showLogin: document.getElementById('show-login'),
+            forgotPassword: document.getElementById('forgot-password'),
             // Profile elements
             profileModal: document.getElementById('profile-modal'),
             profileModalClose: document.getElementById('profile-modal-close'),
             profileAvatar: document.getElementById('profile-avatar'),
             profileName: document.getElementById('profile-name'),
             profileEmail: document.getElementById('profile-email'),
-            orderList: document.getElementById('order-list'),
-            logoutBtn: document.getElementById('logout-btn')
+            logoutBtn: document.getElementById('logout-btn'),
+            // Password reset elements
+            passwordResetDialog: document.getElementById('password-reset-dialog'),
+            resetEmail: document.getElementById('reset-email'),
+            resetError: document.getElementById('reset-error'),
+            passwordResetDialogClose: document.getElementById('password-reset-dialog-close'),
+            passwordResetDialogCancel: document.getElementById('password-reset-dialog-cancel'),
+            passwordResetDialogConfirm: document.getElementById('password-reset-dialog-confirm')
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -2851,7 +2797,6 @@
                     // User is signed in
                     currentUser = user;
                     updateUserUI(user);
-                    loadUserOrders(user.uid);
                 } else {
                     // No user is signed in
                     currentUser = null;
@@ -2912,64 +2857,6 @@
             setTimeout(() => {
                 elements.profileModal.style.display = 'none';
             }, 300);
-        }
-
-        function loadUserOrders(userId) {
-            db.collection("orders").where("userId", "==", userId)
-                .orderBy("createdAt", "desc")
-                .limit(5)
-                .get()
-                .then(querySnapshot => {
-                    userOrders = [];
-                    elements.orderList.innerHTML = '';
-                    
-                    if (querySnapshot.empty) {
-                        elements.orderList.innerHTML = '<div class="no-orders">No hay pedidos recientes</div>';
-                        return;
-                    }
-                    
-                    querySnapshot.forEach(doc => {
-                        const order = { id: doc.id, ...doc.data() };
-                        userOrders.push(order);
-                        
-                        const orderDate = order.createdAt.toDate();
-                        const formattedDate = orderDate.toLocaleDateString('es-ES', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
-                        
-                        let statusClass = '';
-                        let statusText = '';
-                        
-                        if (order.status === 'completed') {
-                            statusClass = 'status-completed';
-                            statusText = 'Completado';
-                        } else if (order.status === 'cancelled') {
-                            statusClass = 'status-cancelled';
-                            statusText = 'Cancelado';
-                        } else {
-                            statusClass = 'status-pending';
-                            statusText = 'Pendiente';
-                        }
-                        
-                        const orderElement = document.createElement('div');
-                        orderElement.className = 'order-item';
-                        orderElement.innerHTML = `
-                            <div class="order-header">
-                                <div class="order-id">Pedido #${order.id.substring(0, 8)}</div>
-                                <div class="order-date">${formattedDate}</div>
-                            </div>
-                            <div class="order-status ${statusClass}">${statusText}</div>
-                            <div class="order-total">Total: CUP ${order.total.toFixed(2)}</div>
-                        `;
-                        elements.orderList.appendChild(orderElement);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error loading orders:", error);
-                    elements.orderList.innerHTML = '<div class="no-orders">Error al cargar el historial</div>';
-                });
         }
 
         function handleLogin(email, password) {
@@ -3047,6 +2934,38 @@
                 });
         }
 
+        function handlePasswordReset(email) {
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    closePasswordResetDialog();
+                    showConfirmationDialog('Correo enviado', `Hemos enviado un enlace para restablecer tu contraseña a ${email}`);
+                })
+                .catch(error => {
+                    let errorMessage = 'Error al enviar el correo de recuperación';
+                    switch (error.code) {
+                        case 'auth/user-not-found':
+                            errorMessage = 'No existe una cuenta con este correo';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage = 'Correo electrónico inválido';
+                            break;
+                    }
+                    elements.resetError.textContent = errorMessage;
+                    elements.resetError.style.display = 'block';
+                });
+        }
+
+        function openPasswordResetDialog() {
+            closeAuthModal();
+            elements.passwordResetDialog.classList.add('show');
+            elements.resetEmail.value = '';
+            elements.resetError.style.display = 'none';
+        }
+
+        function closePasswordResetDialog() {
+            elements.passwordResetDialog.classList.remove('show');
+        }
+
         function handleLogout() {
             auth.signOut()
                 .then(() => {
@@ -3103,8 +3022,8 @@
             elements.municipalityDialog.classList.remove('show');
         }
         
-        function showConfirmationDialog(province, municipality) {
-            elements.confirmationText.textContent = `Hemos guardado tu ubicación: ${municipality}, ${province}. Mostraremos productos disponibles en tu área.`;
+        function showConfirmationDialog(title, message) {
+            elements.confirmationText.textContent = message;
             elements.confirmationDialog.classList.add('show');
         }
         
@@ -3159,7 +3078,7 @@
                     elements.bannerDots.innerHTML = '';
 
                     if (querySnapshot.empty) {
-                        elements.bannerSlides.innerHTML = '<div class="banner-slide"><img src="https://via.placeholder.com/800x180/FFFFFF/000000?text=Venta+por+todo+Cuba" alt=conecta a un servidor internacinal"></div>';
+                        elements.bannerSlides.innerHTML = '<div class="banner-slide"><img src="https://via.placeholder.com/800x180/FFFFFF/000000?text=Venta+por+todo+Cuba" alt="Banner"></div>';
                         return;
                     }
 
@@ -3246,7 +3165,7 @@
                     products = [];
                     
                     if (querySnapshot.empty) {
-                        elements.productList.innerHTML = '<div class="empty">NO CUENTAS CON UNA CONEXION A INTERNET SEGURA,POR FAVOR CONETATE A UN VPN )</div>';
+                        elements.productList.innerHTML = '<div class="empty">NO CUENTAS CON UNA CONEXION A INTERNET SEGURA,POR FAVOR CONETATE A UN VPN</div>';
                         return;
                     }
 
@@ -3745,25 +3664,6 @@
                 window.open(`https://t.me/${telegramUser}?text=${encodeURIComponent(message)}`, '_blank');
             }
 
-            // Save order if user is logged in
-            if (currentUser) {
-                const orderData = {
-                    userId: currentUser.uid,
-                    items: shoppingBag,
-                    total: shoppingBag.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                    status: 'pending',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                db.collection("orders").add(orderData)
-                    .then(() => {
-                        console.log("Order saved successfully");
-                    })
-                    .catch(error => {
-                        console.error("Error saving order:", error);
-                    });
-            }
-
             clearBag();
             closeBagModal();
         }
@@ -3903,6 +3803,11 @@
                 elements.loginTab.click();
             });
 
+            elements.forgotPassword.addEventListener('click', (e) => {
+                e.preventDefault();
+                openPasswordResetDialog();
+            });
+
             elements.loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = elements.loginEmail.value;
@@ -3916,6 +3821,16 @@
                 const email = elements.registerEmail.value;
                 const password = elements.registerPassword.value;
                 handleRegister(name, email, password);
+            });
+
+            // Password reset event listeners
+            elements.passwordResetDialogClose.addEventListener('click', closePasswordResetDialog);
+            elements.passwordResetDialogCancel.addEventListener('click', closePasswordResetDialog);
+            elements.passwordResetDialogConfirm.addEventListener('click', () => {
+                const email = elements.resetEmail.value;
+                if (email) {
+                    handlePasswordReset(email);
+                }
             });
 
             // Profile event listeners
